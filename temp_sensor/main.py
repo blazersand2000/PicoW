@@ -1,3 +1,4 @@
+from json import load
 import network
 import urequests
 import uasyncio
@@ -42,6 +43,9 @@ async def handle_request(reader, writer):
     log("Client disconnected")
 
 async def main():
+    with open('settings.json', 'r') as content:
+        print(load(content))
+
     wifi_status_q = queue.Queue()
     log('Connecting to network...')
     uasyncio.create_task(wifi_loop(wifi_status_q))

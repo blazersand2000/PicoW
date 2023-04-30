@@ -30,5 +30,5 @@ class OutputState:
     def __init__(self, state: State):
         self.temperature = state._temperature
         self.connected = state._connected
-        self.status = state._status
+        self.status = state._status if state._status is not None else ''
         self.ip = str(state._ip)
