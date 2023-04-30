@@ -1,12 +1,13 @@
 import network
 import urequests
-import time
 import uasyncio
 import queue
 import output
 import temp_sensor
 from machine import Pin, ADC
 from state import State
+from logger import log
+from wifi import wifi_loop
 
 led = Pin(15, Pin.OUT)
 onboard = Pin("LED", Pin.OUT, value=0)
@@ -22,43 +23,6 @@ template = """<!DOCTYPE html>
 """
 
 temperatures = []
-
-def connect_to_network():
-    ssid = 'Tom Brady - G.O.A.T.'
-    password = 'ripcityforever'
-    hostname = 'Andrew_PicoW'
-    
-    network.hostname(hostname)
-    network.country('US')
-    wlan = network.WLAN(network.STA_IF)
-    wlan.active(True)
-    wlan.config(pm = 0xa11140) # Disable power-save mode
-    wlan.connect(ssid, password)
-
-    max_wait = 10
-    while max_wait > 0:
-        """
-            0   STAT_IDLE -- no connection and no activity,
-            1   STAT_CONNECTING -- connecting in progress,
-            -3  STAT_WRONG_PASSWORD -- failed due to incorrect password,
-            -2  STAT_NO_AP_FOUND -- failed because no access point replied,
-            -1  STAT_CONNECT_FAIL -- failed due to other problems,
-            3   STAT_GOT_IP -- connection successful.
-        """
-        if wlan.status() < 0 or wlan.status() >= 3:
-            break
-        max_wait -= 1
-        log('waiting for connection...')
-        time.sleep(1)
-
-    if wlan.status() != 3:
-        raise RuntimeError('network connection failed')
-    else:
-        log('connected')
-        status = wlan.ifconfig()
-        log('ip = ' + status[0])
-        
-    return wlan
 
 async def handle_request(reader, writer):
     log("Client connected")
@@ -78,8 +42,9 @@ async def handle_request(reader, writer):
     log("Client disconnected")
 
 async def main():
+    wifi_status_q = queue.Queue()
     log('Connecting to network...')
-    wlan = connect_to_network()
+    uasyncio.create_task(wifi_loop(wifi_status_q))
 
     log('Setting up web server...')
     uasyncio.create_task(uasyncio.start_server(handle_request, "0.0.0.0", 80))
@@ -100,6 +65,9 @@ async def main():
         if not temperature_q.empty():
             temperature = await temperature_q.get()
             await state.set_temperature(temperature)
+        if not wifi_status_q.empty():
+            wifi_status = await wifi_status_q.get()
+            await state.set_wifi_status(wifi_status)
         await uasyncio.sleep_ms(0)
     
     # while True:
@@ -130,14 +98,6 @@ async def heartbeat():
         await uasyncio.sleep(0.25)
         onboard.off()
         await uasyncio.sleep(5)
-        
-def log(s, shouldPrint = True):
-    f = lambda n : f'0{n}' if n < 10 else f'{n}'
-    t = time.localtime()
-    log = f'{t[0]}-{f(t[1])}-{f(t[2])} {f(t[3])}:{f(t[4])}:{f(t[5])}\t{s}'
-    if shouldPrint:
-        print(log)
-    return log
 
 try:
     uasyncio.run(main())

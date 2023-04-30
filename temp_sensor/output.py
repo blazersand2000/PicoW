@@ -20,7 +20,7 @@ class Output:
                 self._display.set_pen(self._bg_pen)
                 self._display.clear()
 
-                f_offset = self.__write_temp(output._temperature)
+                f_offset = self.__write_temp(output.temperature)
 
                 self._display.set_pen(self._temp_pen)
                 self._display.set_font('sans')
@@ -37,7 +37,7 @@ class Output:
                 self._display.set_thickness(thickness)
                 scale = 1
                 y_offset = 110
-                self._display.text('Test', 0, y_offset + 1, scale=scale)
+                self._display.text(output.ip, 0, y_offset + 1, scale=scale)
                 
                 self._display.update()
 
