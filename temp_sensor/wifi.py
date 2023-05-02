@@ -1,7 +1,7 @@
 import network
 import uasyncio
 import queue
-from logger import log
+from logger import log_info
 
 wifi_statuses = {-3: 'Incorrect password', -2: 'No matching SSID found', -1: 'Connection failed',
                     0: 'Link is down', 1: 'Connecting', 2: 'No IP address', 3: 'Successfully connected'}

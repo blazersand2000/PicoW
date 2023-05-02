@@ -5,9 +5,10 @@ import uasyncio
 import queue
 import output
 import temp_sensor
+from settings import load_settings
 from machine import Pin, ADC
 from state import State
-from logger import log
+from logger import log_info
 from wifi import wifi_loop
 
 led = Pin(15, Pin.OUT)
@@ -43,8 +44,7 @@ async def handle_request(reader, writer):
     log_info("Client disconnected")
 
 async def main():
-    with open('settings.json', 'r') as content:
-        print(load(content))
+    print(load_settings())
 
     wifi_status_q = queue.Queue()
     log_info('Connecting to network...')

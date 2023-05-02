@@ -1,3 +1,6 @@
 {
-  "hostname": "ian"
+  "hostname": "ian",
+  "tempPublishIntervalSeconds": 60,
+  "screenOnTimeOfDay": { "hour": 5, "minute": 0 },
+  "screenOffTimeOfDay": { "hour": 15, "minute": 30 }
 }
