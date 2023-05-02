@@ -8,16 +8,16 @@ def main():
     wlan = connect()
     while True:
         try:
-            log('Fetching weather for Tampa...')
+            log_info('Fetching weather for Tampa...')
             url = 'https://api.open-meteo.com/v1/forecast?latitude=27.95&longitude=-82.46&hourly=temperature_2m&current_weather=true&temperature_unit=fahrenheit&windspeed_unit=mph&precipitation_unit=inch'
             r = urequests.get(url)
             data = r.json()
             r.close()
             temp = data['current_weather']['temperature']
-            log(f'Current temperature in Tampa is {temp} F.')
+            log_info(f'Current temperature in Tampa is {temp} F.')
         except:
-            log("could not connect (status =" + str(wlan.status()) + ")")
-            log("trying to reconnect...")
+            log_info("could not connect (status =" + str(wlan.status()) + ")")
+            log_info("trying to reconnect...")
             wlan.disconnect()
             wlan = connect()
         time.sleep(60)
@@ -40,20 +40,20 @@ def connect():
         if wlan.status() < 0 or wlan.status() >= 3:
             break
         max_wait -= 1
-        log('waiting for connection...')
+        log_info('waiting for connection...')
         time.sleep(1)
 
     # Handle connection error
     if wlan.status() != 3:
         raise RuntimeError('network connection failed')
     else:
-        log('connected')
+        log_info('connected')
         status = wlan.ifconfig()
-        log( 'ip = ' + status[0] )
+        log_info( 'ip = ' + status[0] )
         
     return wlan
 
-def log(s):
+def log_info(s):
     f = lambda n : f'0{n}' if n < 10 else f'{n}'
     t = time.localtime()
     print(f'{t[0]}-{f(t[1])}-{f(t[2])} {f(t[3])}:{f(t[4])}:{f(t[5])}\t{s}')

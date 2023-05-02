@@ -31,7 +31,7 @@ async def wifi_loop(q: queue.Queue):
             status = new_status
             ip = new_ip
             await q.put({'connected': connected, 'status': status, 'ip': ip})
-        log('sleeping 1')
+        log_info('sleeping 1')
         await uasyncio.sleep(1)
 
 async def connect(ssid, password, hostname):
@@ -56,18 +56,18 @@ async def connect(ssid, password, hostname):
         if wlan.status() < 0 or wlan.status() >= 3:
             break
         max_wait -= 1
-        log('waiting for connection...')
+        log_info('waiting for connection...')
         await uasyncio.sleep(1)
 
     status_code = wlan.status()
     status_text = get_status_text(status_code)
     if status_code != 3:
-        log(f'WiFi error: {status_text}. Retrying...')
+        log_info(f'WiFi error: {status_text}. Retrying...')
         #raise RuntimeError('network connection failed')
     else:
         status = wlan.ifconfig()
-        log(f'Connected to WiFi; IP: {status[0]}')
-        # log('ip = ' + status[0])
+        log_info(f'Connected to WiFi; IP: {status[0]}')
+        # log_info('ip = ' + status[0])
 
     return wlan
 

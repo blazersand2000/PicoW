@@ -26,9 +26,9 @@ template = """<!DOCTYPE html>
 temperatures = []
 
 async def handle_request(reader, writer):
-    log("Client connected")
+    log_info("Client connected")
     request_line = await reader.readline()
-    log("Request:" + str(request_line))
+    log_info("Request:" + str(request_line))
     # We are not interested in HTTP request headers, skip them
     while await reader.readline() != b"\r\n":
         pass
@@ -40,17 +40,17 @@ async def handle_request(reader, writer):
 
     await writer.drain()
     await writer.wait_closed()
-    log("Client disconnected")
+    log_info("Client disconnected")
 
 async def main():
     with open('settings.json', 'r') as content:
         print(load(content))
 
     wifi_status_q = queue.Queue()
-    log('Connecting to network...')
+    log_info('Connecting to network...')
     uasyncio.create_task(wifi_loop(wifi_status_q))
 
-    log('Setting up web server...')
+    log_info('Setting up web server...')
     uasyncio.create_task(uasyncio.start_server(handle_request, "0.0.0.0", 80))
     
     uasyncio.create_task(heartbeat())
@@ -76,7 +76,7 @@ async def main():
     
     # while True:
     #     try:
-    #         log('Fetching weather for Tampa...')
+    #         log_info('Fetching weather for Tampa...')
     #         url = 'https://api.open-meteo.com/v1/forecast?latitude=27.95&longitude=-82.46&hourly=temperature_2m&current_weather=true&temperature_unit=fahrenheit&windspeed_unit=mph&precipitation_unit=inch'
     #         r = urequests.get(url)
     #         data = r.json()
@@ -84,13 +84,13 @@ async def main():
     #         temp = data['current_weather']['temperature']
     #         message = f'Current temperature in Tampa is {temp} F.'
     #         global temperatures
-    #         temperatures.append(log(message, False))
+    #         temperatures.append(log_info(message, False))
     #         temperatures = temperatures[-100:]
-    #         log(message)
+    #         log_info(message)
     #     except Exception as ex:
     #         # print(ex)
-    #         log("could not connect (status =" + str(wlan.status()) + ")")
-    #         log("trying to reconnect...")
+    #         log_info("could not connect (status =" + str(wlan.status()) + ")")
+    #         log_info("trying to reconnect...")
     #         wlan.disconnect()
     #         wlan = connect_to_network()
     #     await uasyncio.sleep(60)
@@ -98,7 +98,7 @@ async def main():
 async def heartbeat():
     while True:
         onboard.on()
-        # log("heartbeat")
+        # log_info("heartbeat")
         await uasyncio.sleep(0.25)
         onboard.off()
         await uasyncio.sleep(5)
