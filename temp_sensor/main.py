@@ -44,8 +44,6 @@ async def handle_request(reader, writer):
     log_info("Client disconnected")
 
 async def main():
-    print(load_settings())
-
     wifi_status_q = queue.Queue()
     log_info('Connecting to network...')
     uasyncio.create_task(wifi_loop(wifi_status_q))
@@ -64,7 +62,9 @@ async def main():
     uasyncio.create_task(temp_sensor.read_temp_loop(temperature_q))
 
     state = State(output_q)
-
+    settings = load_settings()
+    await state.set_settings(settings)
+    
     while True:
         if not temperature_q.empty():
             temperature = await temperature_q.get()

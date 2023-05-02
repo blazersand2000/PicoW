@@ -1,5 +1,5 @@
 {
-  "hostname": "ian",
+  "hostname": "Primo_1",
   "tempPublishIntervalSeconds": 60,
   "screenOnTimeOfDay": { "hour": 5, "minute": 0 },
   "screenOffTimeOfDay": { "hour": 15, "minute": 30 }

@@ -21,6 +21,7 @@ class Output:
                 self._current_y_offset = 0
                 self.__set_background()
                 self.__write_temp(output.temperature)
+                self.__write_value(output.hostname, 'Name: ')
                 self.__write_value(output.status, 'WiFi: ')
                 self.__write_value(output.ip, 'IP: ')
                 self._display.update()
@@ -54,6 +55,7 @@ class Output:
         self._current_y_offset = self._current_y_offset + 111
 
     def __write_value(self, value_text, label_text = None):
+        # TODO: handle unimplemented characters
         self._display.set_font('bitmap8')
         thickness = 2
         self._display.set_thickness(thickness)
