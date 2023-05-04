@@ -10,6 +10,7 @@ from machine import Pin, ADC
 from state import State
 from logger import log_info
 from wifi import wifi_loop
+import web_server
 
 led = Pin(15, Pin.OUT)
 onboard = Pin("LED", Pin.OUT, value=0)
@@ -49,7 +50,8 @@ async def main():
     uasyncio.create_task(wifi_loop(wifi_status_q))
 
     log_info('Setting up web server...')
-    uasyncio.create_task(uasyncio.start_server(handle_request, "0.0.0.0", 80))
+    web_server.run()
+    #uasyncio.create_task(uasyncio.start_server(handle_request, "0.0.0.0", 80))
     
     uasyncio.create_task(heartbeat())
     
