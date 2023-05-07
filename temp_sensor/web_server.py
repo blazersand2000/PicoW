@@ -22,7 +22,8 @@ async def __post(request):
     if len(errors) > 0:
         return render_template(index_template_path, settings=State.get_settings(), errors=errors), 422
     await State.state_q.put((State.set_settings, settings))
-    return render_template(index_template_path, settings=settings, errors=errors), 200
+    success = 'Settings saved successfully'
+    return render_template(index_template_path, settings=settings, errors=errors, success=success), 200
 
 
 @server.catchall()

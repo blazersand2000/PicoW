@@ -61,6 +61,12 @@
       font-weight: bold;
     }
 
+    .success {
+      margin-bottom: 1rem;
+      color: green;
+      font-weight: bold;
+    }
+
     .horizontal {
       display: flex;
       flex-direction: row;
@@ -87,6 +93,10 @@
   <form method="post">
     <div class="row error">
       {{''.join([f'<p>{error}</p>' for error in errors])}}
+    </div>
+
+    <div class="row success">
+      {{success}}
     </div>
 
     <div class="row">
