@@ -55,6 +55,12 @@
       margin-bottom: 1rem;
     }
 
+    .error {
+      margin-bottom: 1rem;
+      color: red;
+      font-weight: bold;
+    }
+
     .horizontal {
       display: flex;
       flex-direction: row;
@@ -78,16 +84,20 @@
 </head>
 
 <body>
-  <form>
+  <form method="post">
+    <div class="row error">
+      {{''.join([f'<p>{error}</p>' for error in errors])}}
+    </div>
+
     <div class="row">
       <label for="name">Device Name</label>
-      <input type="text" id="name" name="name" required />
+      <input type="text" id="name" name="name" value="{{settings.hostname}}" required />
     </div>
 
     <div class="row">
       <label for="temp-publish-interval">Temperature Publish Interval</label>
-      <select id="temp-publish-interval" name="temp-publish-interval">
-        <option value="">--Select an Interval--</option>
+      <select id="temp-publish-interval" name="temp-publish-interval" data-value="{{settings.tempPublishIntervalSeconds}}">
+        <!-- <option value="">--Select an Interval--</option> -->
         <option value="30">30 Seconds</option>
         <option value="60">1 Minute</option>
         <option value="300">5 Minutes</option>
@@ -106,12 +116,12 @@
     <div class="row">
       <label for="screen-on">Screen On</label>
       <div id="screen-on" class="horizontal">
-        <select id="screen-on-hour" name="screen-on-hour">
-          <option value="">--Select an Hour--</option>
+        <select id="screen-on-hour" name="screen-on-hour" data-value="{{settings.screenOnTimeOfDay.hour}}">
+          <!-- <option value="">--Select an Hour--</option> -->
         </select>
         <span class="label colon">:</span>
-        <select id="screen-on-minute" name="screen-on-minute">
-          <option value="">--Select a Minute--</option>
+        <select id="screen-on-minute" name="screen-on-minute" data-value="{{settings.screenOnTimeOfDay.minute}}">
+          <!-- <option value="">--Select a Minute--</option> -->
         </select>
       </div>
     </div>
@@ -119,12 +129,12 @@
     <div class="row">
       <label for="screen-off">Screen Off</label>
       <div id="screen-off" class="horizontal">
-        <select id="screen-off-hour" name="screen-off-hour">
-          <option value="">--Select an Hour--</option>
+        <select id="screen-off-hour" name="screen-off-hour" data-value="{{settings.screenOffTimeOfDay.hour}}">
+          <!-- <option value="">--Select an Hour--</option> -->
         </select>
         <span class="label colon">:</span>
-        <select id="screen-off-minute" name="screen-off-minute">
-          <option value="">--Select a Minute--</option>
+        <select id="screen-off-minute" name="screen-off-minute" data-value="{{settings.screenOffTimeOfDay.minute}}">
+          <!-- <option value="">--Select a Minute--</option> -->
         </select>
       </div>
     </div>
@@ -133,7 +143,7 @@
   </form>
 
   <script>
-    function generateOptions(selectId, minVal, maxVal) {
+    function generateOptionsForSelect(selectId, minVal, maxVal) {
       var selectEl = document.getElementById(selectId);
       for (var i = minVal; i < maxVal; i++) {
         var optionEl = document.createElement("option");
@@ -141,13 +151,28 @@
         optionEl.textContent = i < 10 ? `0${i}` : i;
         selectEl.appendChild(optionEl);
       }
+      selectOptionForSelect(selectId);
     }
 
-    generateOptions("screen-on-hour", 0, 24);
-    generateOptions("screen-on-minute", 0, 60);
+    function selectOptionForSelect(selectId) {
+      const selectEl = document.getElementById(selectId);
+      const index = Array.from(selectEl.options).findIndex(option => option.value == selectEl.dataset.value);
+      if (index !== -1) {
+        selectEl.options[index].selected = true;
+      }
+    }
 
-    generateOptions("screen-off-hour", 0, 24);
-    generateOptions("screen-off-minute", 0, 60);
+
+    window.onload = () => {
+      generateOptionsForSelect("screen-on-hour", 0, 24);
+      generateOptionsForSelect("screen-on-minute", 0, 60);
+
+      generateOptionsForSelect("screen-off-hour", 0, 24);
+      generateOptionsForSelect("screen-off-minute", 0, 60);
+
+      selectOptionForSelect("temp-publish-interval");
+    }
+
   </script>
 </body>
 

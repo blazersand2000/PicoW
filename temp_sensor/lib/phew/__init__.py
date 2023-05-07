@@ -17,6 +17,13 @@ try:
 except:
   remote_mount = True
 
+def get_ip_address():
+  import network
+  try:
+    return network.WLAN(network.STA_IF).ifconfig()[0]
+  except:
+    return None
+
 def is_connected_to_wifi():
   import network, time
   wlan = network.WLAN(network.STA_IF)
@@ -49,10 +56,10 @@ def connect_to_wifi(ssid, password, timeout_seconds=30):
       status = new_status
     time.sleep(0.25)
 
-  if wlan.status() != 3:
-    return None
+  if wlan.status() == network.STAT_GOT_IP:
+    return wlan.ifconfig()[0]
+  return None
 
-  return wlan.ifconfig()[0]
 
 # helper method to put the pico into access point mode
 def access_point(ssid, password = None):

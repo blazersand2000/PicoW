@@ -1,6 +1,6 @@
 from . import logging
 
-async def render_template(template, **kwargs):
+def render_template(template, **kwargs):
   import time
   start_time = time.ticks_ms()
 
@@ -54,7 +54,7 @@ async def render_template(template, **kwargs):
             yield chunk
         else:
           # yield the result of the expression
-          if result:
+          if result is not None:
             yield str(result)
       except:
         pass

@@ -1,40 +1,62 @@
 import queue
+import uasyncio
+import output
 from settings import Settings
 
 
 class State:
-    def __init__(self, output_q: queue.Queue):
-        self._temperature = None
-        self._connected = None
-        self._status = None
-        self._ip = None
-        self._settings: Settings = None
-        self._output_q = output_q
+    _temperature = None
+    _connected = None
+    _status = None
+    _ip = None
+    _settings: Settings = None
+    _output_q = queue.Queue()
+    state_q = queue.Queue()
 
-    @property
-    def temperature(self):
-        return self._temperature
+    @classmethod
+    async def state_loop(cls):
+        out = output.Output()
+        uasyncio.create_task(out.output_loop(cls._output_q))
+        while True:
+            if not cls.state_q.empty():
+                op, value = await cls.state_q.get()
+                await op(value)
+            await uasyncio.sleep_ms(0)
 
-    async def set_temperature(self, value):
-        if self._temperature != value:
-            self._temperature = value
-            await self._output_q.put(OutputState(self))
+    # @classmethod
+    # async def queue_method(cls, method):
+    #     await cls.state_q.put(method)
 
-    async def set_wifi_status(self, value):
+    @classmethod
+    async def set_temperature(cls, value):
+        if cls._temperature != value:
+            cls._temperature = value
+            await cls._output_q.put(OutputState(cls))
+
+    @classmethod
+    async def set_wifi_status(cls, value):
         new_connected = value['connected']
         new_status = value['status']
         new_ip = value['ip']
-        if self._connected != new_connected or self._status != new_status or self._ip != new_ip:
-            self._connected = new_connected
-            self._status = new_status
-            self._ip = new_ip
-            await self._output_q.put(OutputState(self))
+        if cls._connected != new_connected or cls._status != new_status or cls._ip != new_ip:
+            cls._connected = new_connected
+            cls._status = new_status
+            cls._ip = new_ip
+            await cls._output_q.put(OutputState(cls))
 
-    async def set_settings(self, value: Settings):
-        if self._settings == value:
+    @classmethod
+    async def get_settings(cls):
+        return cls._settings
+    
+    @classmethod
+    async def set_settings(cls, value: Settings):
+        if cls._settings == value:
+            print('SETTINGS == value!!!!')
             return
-        self._settings = value
-        self._settings.save_settings()
+        cls._settings = value
+        cls._settings.save_settings()
+        print('SETTINGS SAVED!!!!')
+
 
 class OutputState:
     def __init__(self, state: State):
