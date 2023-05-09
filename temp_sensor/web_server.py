@@ -1,6 +1,5 @@
 from logger import log_info
 from phew import server
-from phew.server import Response
 from phew.template import render_template
 from state import State
 from settings import Settings
@@ -28,7 +27,7 @@ async def __post(request):
 
 
 @server.catchall()
-def __catchall(request):
+async def __catchall(request):
     return 'Not found!', 404
 
 
@@ -73,6 +72,7 @@ def __parse_and_validate_settings(form):
     screen_off_time_of_day_hour = form.get('screen-off-hour', '0')
     screen_off_time_of_day_minute = form.get('screen-off-minute', '0')
     brightness = form.get('brightness', '0')
+    rotated = form.get('rotated-checkbox', '0')
 
     errors = []
     if len(hostname) < 1:
@@ -98,7 +98,8 @@ def __parse_and_validate_settings(form):
         "maxTemp": float(max_temp),
         "screenOnTimeOfDay": {"hour": int(screen_on_time_of_day_hour), "minute": int(screen_on_time_of_day_minute)},
         "screenOffTimeOfDay": {"hour": int(screen_off_time_of_day_hour), "minute": int(screen_off_time_of_day_minute)},
-        "brightness": int(brightness) / 10
+        "brightness": int(brightness) / 10,
+        "rotated": rotated.lower() == "true"
     }
     return Settings(settingsDict), errors
 

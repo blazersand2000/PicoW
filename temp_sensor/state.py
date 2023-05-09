@@ -64,4 +64,7 @@ class OutputState:
         self.status = state._status if state._status is not None else ''
         self.ip = str(state._ip)
         self.hostname = state._settings.hostname if state._settings is not None else ''
+        self.min_temp = state._settings.minTemp if state._settings is not None else -1000000
+        self.max_temp = state._settings.maxTemp if state._settings is not None else 1000000
         self.brightness = state._settings.brightness if state._settings is not None else 0.5
+        self.rotated = state._settings.rotated if state._settings is not None else False

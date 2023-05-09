@@ -25,6 +25,7 @@ class Settings:
         self.screenOffTimeOfDay = self.TimeOfDay(
             dict['screenOffTimeOfDay']['hour'], dict['screenOffTimeOfDay']['minute'])
         self.brightness = dict['brightness']
+        self.rotated = dict['rotated']
 
     def save_settings(self):
         settings_dict = {
@@ -34,7 +35,8 @@ class Settings:
             'maxTemp': self.maxTemp,
             'screenOnTimeOfDay': {'hour': self.screenOnTimeOfDay.hour, 'minute': self.screenOnTimeOfDay.minute},
             'screenOffTimeOfDay': {'hour': self.screenOffTimeOfDay.hour, 'minute': self.screenOffTimeOfDay.minute},
-            'brightness': self.brightness
+            'brightness': self.brightness,
+            'rotated': self.rotated
         }
         with open('settings.json', 'w') as settings_file:
             dump(settings_dict, settings_file)
@@ -42,4 +44,4 @@ class Settings:
     def __eq__(self, other):
         if not isinstance(other, Settings):
             return NotImplemented
-        return (self.hostname, self.tempPublishIntervalSeconds, self.minTemp, self.maxTemp, self.screenOnTimeOfDay.hour, self.screenOnTimeOfDay.minute, self.screenOffTimeOfDay.hour, self.screenOffTimeOfDay.minute, self.brightness) == (other.hostname, other.tempPublishIntervalSeconds, other.minTemp, other.maxTemp, other.screenOnTimeOfDay.hour, other.screenOnTimeOfDay.minute, other.screenOffTimeOfDay.hour, other.screenOffTimeOfDay.minute, other.brightness)
+        return (self.hostname, self.tempPublishIntervalSeconds, self.minTemp, self.maxTemp, self.screenOnTimeOfDay.hour, self.screenOnTimeOfDay.minute, self.screenOffTimeOfDay.hour, self.screenOffTimeOfDay.minute, self.brightness, self.rotated) == (other.hostname, other.tempPublishIntervalSeconds, other.minTemp, other.maxTemp, other.screenOnTimeOfDay.hour, other.screenOnTimeOfDay.minute, other.screenOffTimeOfDay.hour, other.screenOffTimeOfDay.minute, other.brightness, other.rotated)

@@ -2,21 +2,30 @@ import uasyncio
 import queue
 from state import State, OutputState
 from picographics import PicoGraphics, DISPLAY_PICO_DISPLAY_2, PEN_RGB332
+from pimoroni import RGBLED
+import gc
+import utime
 
 class Output:
     def __init__(self) -> None:
+        self._rotated = False
         self._display = PicoGraphics(display=DISPLAY_PICO_DISPLAY_2, pen_type=PEN_RGB332)
         self._width, self.height = self._display.get_bounds()
         self._current_y_offset = 0
         self._bg_pen = self._display.create_pen(0, 0, 0)
-        self._temp_pen = self._display.create_pen(100, 255, 100)
+        self._is_temp_within_range = True
+        self._temp_pen_within_range = self._display.create_pen(100, 255, 100)
+        self._temp_pen_outside_range = self._display.create_pen(255, 0, 100)
         self._label_pen = self._display.create_pen(255, 255, 255)
         self._value_pen = self._display.create_pen(200, 200, 255)
     
     async def output_loop(self, q: queue.Queue):
+        led = RGBLED(6, 7, 8)
         while True:
             if not q.empty():
                 output: OutputState = await q.get()
+                self.__set_rotation(output.rotated)
+                self.__set_temp_within_range(output)
 
                 self._current_y_offset = 0
                 self.__set_background(output.brightness)
@@ -26,7 +35,23 @@ class Output:
                 self.__write_value(output.ip, 'IP: ')
                 self._display.update()
 
-            await uasyncio.sleep_ms(0)
+            self.__set_led(led)
+            await uasyncio.sleep(1.0 / 60)
+
+    def __set_led(self, led):
+        if not self._is_temp_within_range and utime.gmtime()[5] % 2 == 0:
+            led.set_rgb(255, 0, 0)
+        else:
+            led.set_rgb(0, 0, 0)
+
+    def __set_rotation(self, rotated):
+        if rotated != self._rotated:
+            self._display = None
+            gc.collect()
+            print('CHANGED ROTATION')
+            rotation = 180 if rotated else 0
+            self._display = PicoGraphics(display=DISPLAY_PICO_DISPLAY_2, pen_type=PEN_RGB332, rotate=rotation)
+            self._rotated = rotated
 
     def __set_background(self, brightness):
         self._display.set_backlight(brightness)    
@@ -34,15 +59,16 @@ class Output:
         self._display.clear()
 
     def __write_temp(self, temp):
+        pen = self._temp_pen_within_range if self._is_temp_within_range else self._temp_pen_outside_range
         def __write_f(f_offset):
-            self._display.set_pen(self._temp_pen)
+            self._display.set_pen(pen)
             self._display.set_font('sans')
             thickness = 2
             self._display.set_thickness(thickness)
             scale = 1
             y_offset = 12 * scale + thickness
             self._display.text('F', f_offset, y_offset + 1, scale=scale)
-        self._display.set_pen(self._temp_pen)
+        self._display.set_pen(pen)
         self._display.set_font('sans')
         thickness = 6
         self._display.set_thickness(thickness)
@@ -56,7 +82,6 @@ class Output:
         self._current_y_offset = self._current_y_offset + 111
 
     def __write_value(self, value_text, label_text = None):
-        # TODO: handle unimplemented characters
         self._display.set_font('bitmap8')
         thickness = 2
         self._display.set_thickness(thickness)
@@ -69,4 +94,7 @@ class Output:
         self._display.set_pen(self._value_pen)
         self._display.text(value_text, x_offset, self._current_y_offset, scale=scale)
         self._current_y_offset = self._current_y_offset + 20
+
+    def __set_temp_within_range(self, output: OutputState):
+        self._is_temp_within_range = output.temperature is None or output.min_temp <= output.temperature <= output.max_temp
 

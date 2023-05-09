@@ -47,6 +47,22 @@
       padding: 0.5rem 1rem;
     }
 
+    .checkbox-label {
+      display: block;
+      margin-bottom: 0.5rem;
+      font-weight: normal;
+    }
+
+    .checkbox-input {
+      display: inline-block;
+      margin-right: 0.5rem;
+    }
+
+    .checkbox-text {
+      font-size: 1rem;
+      line-height: 1.5rem;
+    }
+
     button:hover {
       background-color: #3e8e41;
     }
@@ -115,7 +131,8 @@
 
     <div class="row">
       <label for="temp-publish-interval">Temperature Publish Interval</label>
-      <select id="temp-publish-interval" name="temp-publish-interval" data-value="{{settings.tempPublishIntervalSeconds}}">
+      <select id="temp-publish-interval" name="temp-publish-interval"
+        data-value="{{settings.tempPublishIntervalSeconds}}">
         <!-- <option value="">--Select an Interval--</option> -->
         <option value="30">30 Seconds</option>
         <option value="60">1 Minute</option>
@@ -172,8 +189,20 @@
     <div class="row">
       <label for="brightness">Screen Brightness</label>
       <div class="horizontal">
-        <input type="range" id="brightness" name="brightness" class="range" min="0" max="10" value="{{settings.brightness * 10}}">
+        <input type="range" id="brightness" name="brightness" class="range" min="0" max="10"
+          value="{{settings.brightness * 10}}">
         <label for="brightness" id="brightness-value" class="range-label"></label>
+      </div>
+    </div>
+
+    <div class="row">
+      <div id="rotated">
+        <label for="rotated">Screen Rotation</label>
+        <input type="hidden" name="rotated-checkbox" value="false">
+        <label for="rotated-checkbox" class="checkbox-label">
+          <input type="checkbox" id="rotated-checkbox" name="rotated-checkbox" value="true"{{' checked' if settings.rotated else ''}} class="checkbox-input">
+          <span class="checkbox-text">Rotate screen 180°</span>
+        </label>
       </div>
     </div>
 
@@ -205,7 +234,7 @@
       const sliderValueLabel = document.querySelector('#brightness-value');
       sliderValueLabel.textContent = slider.value;
 
-      slider.addEventListener('input', function() {
+      slider.addEventListener('input', function () {
         sliderValueLabel.textContent = slider.value;
       });
     }
