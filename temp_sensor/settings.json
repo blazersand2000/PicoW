@@ -1,6 +1,9 @@
 {
   "hostname": "Primo_1",
   "tempPublishIntervalSeconds": 60,
+  "minTemp": 34.5,
+  "maxTemp": 41.8,
   "screenOnTimeOfDay": { "hour": 5, "minute": 0 },
-  "screenOffTimeOfDay": { "hour": 15, "minute": 30 }
+  "screenOffTimeOfDay": { "hour": 15, "minute": 30 },
+  "brightness": 0.4
 }

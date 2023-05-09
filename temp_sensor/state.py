@@ -47,21 +47,21 @@ class State:
     @classmethod
     async def get_settings(cls):
         return cls._settings
-    
+
     @classmethod
     async def set_settings(cls, value: Settings):
         if cls._settings == value:
-            print('SETTINGS == value!!!!')
             return
         cls._settings = value
         cls._settings.save_settings()
-        print('SETTINGS SAVED!!!!')
+        await cls._output_q.put(OutputState(cls))
 
 
 class OutputState:
     def __init__(self, state: State):
-        self.hostname = state._settings.hostname if state._settings is not None else ''
         self.temperature = state._temperature
         self.connected = state._connected
         self.status = state._status if state._status is not None else ''
         self.ip = str(state._ip)
+        self.hostname = state._settings.hostname if state._settings is not None else ''
+        self.brightness = state._settings.brightness if state._settings is not None else 0.5

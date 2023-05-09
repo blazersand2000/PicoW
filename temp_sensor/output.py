@@ -19,7 +19,7 @@ class Output:
                 output: OutputState = await q.get()
 
                 self._current_y_offset = 0
-                self.__set_background()
+                self.__set_background(output.brightness)
                 self.__write_temp(output.temperature)
                 self.__write_value(output.hostname, 'Name: ')
                 self.__write_value(output.status, 'WiFi: ')
@@ -28,8 +28,8 @@ class Output:
 
             await uasyncio.sleep_ms(0)
 
-    def __set_background(self):
-        self._display.set_backlight(0.4)    
+    def __set_background(self, brightness):
+        self._display.set_backlight(brightness)    
         self._display.set_pen(self._bg_pen)
         self._display.clear()
 
@@ -48,10 +48,11 @@ class Output:
         self._display.set_thickness(thickness)
         scale = 4
         y_offset = 12 * scale + thickness
-        text = str(f'{temp:.1f}')
+        text = str(f'{temp:.1f}') if temp is not None else ''
         self._display.text(text, 0, y_offset + 1, scale=scale)
         x_offset = self._display.measure_text(text, scale)
-        __write_f(x_offset)
+        if text is not None:
+          __write_f(x_offset)
         self._current_y_offset = self._current_y_offset + 111
 
     def __write_value(self, value_text, label_text = None):
