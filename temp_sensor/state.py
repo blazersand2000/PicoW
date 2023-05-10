@@ -49,6 +49,10 @@ class State:
         return cls._settings
 
     @classmethod
+    async def get_temperature(cls):
+        return cls._temperature
+
+    @classmethod
     async def set_settings(cls, value: Settings):
         if cls._settings == value:
             return

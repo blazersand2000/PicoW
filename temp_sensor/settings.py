@@ -1,5 +1,4 @@
 from json import load, dump
-import time
 
 
 def load_settings():

@@ -8,6 +8,7 @@ import temp_sensor
 from settings import load_settings
 from machine import Pin, ADC
 from state import State
+from temp_publisher import TempPublisher
 from logger import log_info
 from wifi import wifi_loop
 import web_server
@@ -63,6 +64,9 @@ async def main():
 
     settings = load_settings()
     await State.state_q.put((State.set_settings, settings))
+
+    publisher = TempPublisher()
+    uasyncio.create_task(publisher.publish_temp_loop())
     
     while True:
         if not temperature_q.empty():
