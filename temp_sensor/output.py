@@ -65,6 +65,8 @@ class Output:
     def __set_led(self, led):
         if not self._is_temp_within_range and gmtime()[5] % 2 == 0:
             led.set_rgb(255, 0, 0)
+        elif not self._current_state.connected if self._current_state is not None else True:
+            led.set_rgb(255, 255, 0)
         else:
             led.set_rgb(0, 0, 0)
 
@@ -72,7 +74,6 @@ class Output:
         if rotated != self._rotated:
             self._display = None
             gc.collect()
-            print('CHANGED ROTATION')
             rotation = 180 if rotated else 0
             self._display = PicoGraphics(display=DISPLAY_PICO_DISPLAY_2, pen_type=PEN_RGB332, rotate=rotation)
             self._rotated = rotated

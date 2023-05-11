@@ -1,15 +1,17 @@
 import network
 import uasyncio
 import queue
-from logger import log_info
+from state import State
+import variables
+from phew.logging import info, error
 
 wifi_statuses = {-3: 'Incorrect password', -2: 'No matching SSID found', -1: 'Connection failed',
                     0: 'Link is down', 1: 'Connecting', 2: 'No IP address', 3: 'Successfully connected'}
 
 async def wifi_loop(q: queue.Queue):
-    ssid = 'Tom Brady - G.O.A.T.'
-    password = 'ripcityforever'
-    hostname = 'Andrew_PicoW'
+    ssid = variables.ssid
+    password = variables.password
+    hostname = None
     connected = False
     status = 'Connecting'
     ip = ''
@@ -18,8 +20,13 @@ async def wifi_loop(q: queue.Queue):
 
     wlan = None
     while True:
-        print(wlan)
-        if wlan is None or wlan.status() != 3:
+        settings = await State.get_settings()
+        hostname_changed = False
+        if settings.hostname != hostname:
+            hostname = settings.hostname
+            hostname_changed = True
+        # Wait to get hostname populated in settings
+        if (wlan is None or wlan.status() != 3 or hostname_changed) and hostname is not None:
             if wlan is not None:
                 wlan.disconnect()
             wlan = await connect(ssid, password, hostname)
@@ -31,7 +38,7 @@ async def wifi_loop(q: queue.Queue):
             status = new_status
             ip = new_ip
             await q.put({'connected': connected, 'status': status, 'ip': ip})
-        log_info('sleeping 1')
+            # TODO: Log the new information!
         await uasyncio.sleep(1)
 
 async def connect(ssid, password, hostname):
@@ -56,18 +63,15 @@ async def connect(ssid, password, hostname):
         if wlan.status() < 0 or wlan.status() >= 3:
             break
         max_wait -= 1
-        log_info('waiting for connection...')
         await uasyncio.sleep(1)
 
     status_code = wlan.status()
     status_text = get_status_text(status_code)
     if status_code != 3:
-        log_info(f'WiFi error: {status_text}. Retrying...')
-        #raise RuntimeError('network connection failed')
+        error(f'WiFi error: {status_text}. Retrying...')
     else:
         status = wlan.ifconfig()
-        log_info(f'Connected to WiFi; IP: {status[0]}')
-        # log_info('ip = ' + status[0])
+        info(f'Connected to WiFi; IP: {status[0]}')
 
     return wlan
 

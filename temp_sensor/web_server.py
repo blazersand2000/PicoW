@@ -10,7 +10,6 @@ index_template_path = f'{TEMPLATE_PATH}/index.html'
 
 @server.route('/', methods=['GET'])
 async def __get(request):
-    #return 'test', 403
     settings = await State.get_settings()
     return render_template(index_template_path, settings=settings), 200
 
