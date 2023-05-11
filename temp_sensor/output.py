@@ -4,10 +4,16 @@ from state import State, OutputState
 from picographics import PicoGraphics, DISPLAY_PICO_DISPLAY_2, PEN_RGB332
 from pimoroni import RGBLED
 import gc
-import utime
+from utime import gmtime
 
 class Output:
     def __init__(self) -> None:
+        self._current_state = None
+        self._screen_on = False
+        self._screenOnHour = 0
+        self._screenOnMinute = 0
+        self._screenOffHour = 0
+        self._screenOffMinute = 0
         self._rotated = False
         self._display = PicoGraphics(display=DISPLAY_PICO_DISPLAY_2, pen_type=PEN_RGB332)
         self._width, self.height = self._display.get_bounds()
@@ -22,8 +28,11 @@ class Output:
     async def output_loop(self, q: queue.Queue):
         led = RGBLED(6, 7, 8)
         while True:
+            await self.__check_if_screen_should_be_turned_on_or_off(q)
             if not q.empty():
                 output: OutputState = await q.get()
+                self._current_state = output
+                self.__update_screen_on_and_off_time(output)
                 self.__set_rotation(output.rotated)
                 self.__set_temp_within_range(output)
 
@@ -38,8 +47,23 @@ class Output:
             self.__set_led(led)
             await uasyncio.sleep(1.0 / 60)
 
+    def __update_screen_on_and_off_time(self, output: OutputState):
+        self._screenOnHour = output.screenOnHour
+        self._screenOnMinute = output.screenOnMinute
+        self._screenOffHour = output.screenOffHour
+        self._screenOffMinute = output.screenOffMinute
+    
+    async def __check_if_screen_should_be_turned_on_or_off(self, q: queue.Queue):
+        current_time = gmtime()
+        current_hour = current_time[3]
+        current_minute = current_time[4]
+        should_be_on = (current_hour > self._screenOnHour or (current_hour == self._screenOnHour and current_minute >= self._screenOnMinute)) and (current_hour < self._screenOffHour or (current_hour == self._screenOffHour and current_minute < self._screenOffMinute))
+        if self._screen_on != should_be_on:
+            self._screen_on = should_be_on
+            await q.put(self._current_state)
+    
     def __set_led(self, led):
-        if not self._is_temp_within_range and utime.gmtime()[5] % 2 == 0:
+        if not self._is_temp_within_range and gmtime()[5] % 2 == 0:
             led.set_rgb(255, 0, 0)
         else:
             led.set_rgb(0, 0, 0)
@@ -54,7 +78,7 @@ class Output:
             self._rotated = rotated
 
     def __set_background(self, brightness):
-        self._display.set_backlight(brightness)    
+        self._display.set_backlight(0 if not self._screen_on else brightness)
         self._display.set_pen(self._bg_pen)
         self._display.clear()
 

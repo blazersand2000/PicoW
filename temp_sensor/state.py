@@ -6,7 +6,7 @@ from settings import Settings
 
 class State:
     _temperature = None
-    _connected = None
+    _connected = False
     _status = None
     _ip = None
     _settings: Settings = None
@@ -53,6 +53,10 @@ class State:
         return cls._temperature
 
     @classmethod
+    async def get_wifi_status(cls):
+        return cls._connected, cls._status, cls._ip
+
+    @classmethod
     async def set_settings(cls, value: Settings):
         if cls._settings == value:
             return
@@ -70,5 +74,14 @@ class OutputState:
         self.hostname = state._settings.hostname if state._settings is not None else ''
         self.min_temp = state._settings.minTemp if state._settings is not None else -1000000
         self.max_temp = state._settings.maxTemp if state._settings is not None else 1000000
+        self.screenOnHour = 0
+        self.screenOnMinute = 0
+        self.screenOffHour = 0
+        self.screenOffMinute = 0
+        if state._settings is not None and state._settings.screenOnTimeOfDay and state._settings.screenOffTimeOfDay is not None:
+            self.screenOnHour = state._settings.screenOnTimeOfDay.hour if state._settings.screenOnTimeOfDay.hour is not None else 0
+            self.screenOnMinute = state._settings.screenOnTimeOfDay.minute if state._settings.screenOnTimeOfDay.minute is not None else 0
+            self.screenOffHour = state._settings.screenOffTimeOfDay.hour if state._settings.screenOffTimeOfDay.hour is not None else 0
+            self.screenOffMinute = state._settings.screenOffTimeOfDay.minute if state._settings.screenOffTimeOfDay.minute is not None else 0
         self.brightness = state._settings.brightness if state._settings is not None else 0.5
         self.rotated = state._settings.rotated if state._settings is not None else False
