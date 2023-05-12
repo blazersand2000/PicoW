@@ -4,6 +4,8 @@ import queue
 from state import State
 import variables
 import ntptime
+import utime
+import time
 from phew.logging import info, error
 
 wifi_statuses = {-3: 'Incorrect password', -2: 'No matching SSID found', -1: 'Connection failed',
@@ -73,7 +75,7 @@ async def connect(ssid, password, hostname):
     else:
         status = wlan.ifconfig()
         info(f'Connected to WiFi; IP: {status[0]}, hostname: {network.hostname()}')
-        ntptime.timeout = 5
+        ntptime.timeout = 10
         ntptime.settime()
 
     return wlan

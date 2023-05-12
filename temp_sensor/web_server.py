@@ -1,4 +1,3 @@
-from logger import log_info
 from phew import server
 from phew.template import render_template
 from state import State

@@ -4,7 +4,7 @@ from state import State, OutputState
 from picographics import PicoGraphics, DISPLAY_PICO_DISPLAY_2, PEN_RGB332
 from pimoroni import RGBLED
 import gc
-from utime import gmtime
+import my_time
 
 class Output:
     def __init__(self) -> None:
@@ -54,7 +54,7 @@ class Output:
         self._screenOffMinute = output.screenOffMinute
     
     async def __check_if_screen_should_be_turned_on_or_off(self, q: queue.Queue):
-        current_time = gmtime()
+        current_time = my_time.localtime()
         current_hour = current_time[3]
         current_minute = current_time[4]
         should_be_on = (current_hour > self._screenOnHour or (current_hour == self._screenOnHour and current_minute >= self._screenOnMinute)) and (current_hour < self._screenOffHour or (current_hour == self._screenOffHour and current_minute < self._screenOffMinute))
@@ -63,7 +63,7 @@ class Output:
             await q.put(self._current_state)
     
     def __set_led(self, led):
-        if not self._is_temp_within_range and gmtime()[5] % 2 == 0:
+        if not self._is_temp_within_range and my_time.localtime()[5] % 2 == 0:
             led.set_rgb(255, 0, 0)
         elif not self._current_state.connected if self._current_state is not None else True:
             led.set_rgb(255, 255, 0)

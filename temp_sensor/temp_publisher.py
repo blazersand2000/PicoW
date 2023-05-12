@@ -2,8 +2,7 @@ import urequests
 import uasyncio
 from state import State
 import variables
-from logger import log_info
-from utime import gmtime, time
+from utime import time
 from phew.logging import info, warn, error
 
 class TempPublisher:

@@ -9,7 +9,6 @@ from settings import load_settings
 from machine import Pin, ADC
 from state import State
 from temp_publisher import TempPublisher
-from logger import log_info
 from phew.logging import *
 from wifi import wifi_loop
 import web_server
