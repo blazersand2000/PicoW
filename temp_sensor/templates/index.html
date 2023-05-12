@@ -104,9 +104,60 @@
       width: 1rem;
     }
 
+    .section-title {
+      font-size: 1.5rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .section-header {
+      display: flex;
+      align-items: center;
+      justify-content: left;
+      cursor: pointer;
+    }
+
+    .log-messages {
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      margin-bottom: 1rem;
+      overflow: auto;
+      font-size: 0.9rem; /* Adjust the font size as desired */
+    }
+
+    .log-messages ul {
+      list-style-type: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    .log-messages li {
+      padding: 0.5rem;
+      border-bottom: 1px solid #ccc;
+    }
+
+    .log-messages li:last-child {
+      border-bottom: none;
+    }
+
+    .log-messages li:hover {
+      background-color: #f5f5f5;
+    }
+
+    .log-messages.collapsed {
+      display: none;
+    }
+
+    .section-header.collapsed::after {
+      content: "⏷";
+    }
+
+    .section-header::after {
+      content: "⏶";
+    }
+
     /* Media queries for larger screens */
     @media only screen and (min-width: 768px) {
-      form {
+      body {
         max-width: 600px;
         margin: 2rem auto;
       }
@@ -115,6 +166,11 @@
 </head>
 
 <body>
+
+  <div class="row">
+    <h2 class="section-title">Settings</h2>
+  </div>
+
   <form method="post">
     <div class="row error">
       {{''.join([f'<p>{error}</p>' for error in errors])}}
@@ -200,7 +256,7 @@
         <label for="rotated">Screen Rotation</label>
         <input type="hidden" name="rotated-checkbox" value="false">
         <label for="rotated-checkbox" class="checkbox-label">
-          <input type="checkbox" id="rotated-checkbox" name="rotated-checkbox" value="true"{{' checked' if settings.rotated else ''}} class="checkbox-input">
+          <input type="checkbox" id="rotated-checkbox" name="rotated-checkbox" value="true" {{' checked' if settings.rotated else '' }} class="checkbox-input">
           <span class="checkbox-text">Rotate screen 180°</span>
         </label>
       </div>
@@ -208,6 +264,17 @@
 
     <button type="submit">Submit</button>
   </form>
+
+  <!-- <div class="row">
+    <div class="section-header" id="section-header" onclick="toggleLogMessages()">
+      <h2 class="section-title">Log Messages</h2>
+    </div>
+    <div class="log-messages collapsed" id="logMessages">
+      <ul>
+        \{\{(f'<li>{log}</li>'.rstrip() for log in logs)\}\}
+      </ul>
+    </div>
+  </div> -->
 
   <script>
     function generateOptionsForSelect(selectId, minVal, maxVal) {
@@ -237,6 +304,13 @@
       slider.addEventListener('input', function () {
         sliderValueLabel.textContent = slider.value;
       });
+    }
+
+    function toggleLogMessages() {
+      var logMessages = document.getElementById('logMessages');
+      var header = document.getElementById('section-header');
+      logMessages.classList.toggle('collapsed');
+      header.classList.toggle('collapsed');
     }
 
     window.onload = () => {

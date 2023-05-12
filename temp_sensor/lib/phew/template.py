@@ -56,8 +56,8 @@ def render_template(template, **kwargs):
           # yield the result of the expression
           if result is not None:
             yield str(result)
-      except:
-        pass
+      except Exception as ex:
+        logging.exception(f'Template expression parsing failed. Exception: {str(ex)}')
 
       # discard the parsed bit
       token_caret = end + 2

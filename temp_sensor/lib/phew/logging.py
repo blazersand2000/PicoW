@@ -1,4 +1,5 @@
 import machine, os, gc
+from lock import lock
 
 log_file = "log.txt"
 
@@ -52,40 +53,42 @@ def truncate(file, target_size):
   if discard <= 0:
     return
 
-  with open(file, "rb") as infile:
-    with open(file + ".tmp", "wb") as outfile:
-      # skip a bunch of the input file until we've discarded
-      # at least enough
-      while discard > 0:
-        chunk = infile.read(1024)
-        discard -= len(chunk)
+  with lock:
+    with open(file, "rb") as infile:
+      with open(file + ".tmp", "wb") as outfile:
+        # skip a bunch of the input file until we've discarded
+        # at least enough
+        while discard > 0:
+          chunk = infile.read(1024)
+          discard -= len(chunk)
 
-      # try to find a line break nearby to split first chunk on
-      break_position = max(
-        chunk.find (b"\n", -discard), # search forward
-        chunk.rfind(b"\n", -discard) # search backwards
-      )
-      if break_position != -1: # if we found a line break..
-        outfile.write(chunk[break_position + 1:])
+        # try to find a line break nearby to split first chunk on
+        break_position = max(
+          chunk.find (b"\n", -discard), # search forward
+          chunk.rfind(b"\n", -discard) # search backwards
+        )
+        if break_position != -1: # if we found a line break..
+          outfile.write(chunk[break_position + 1:])
 
-      # now copy the rest of the file
-      while True:
-        chunk = infile.read(1024)
-        if not chunk: 
-          break
-        outfile.write(chunk)
+        # now copy the rest of the file
+        while True:
+          chunk = infile.read(1024)
+          if not chunk: 
+            break
+          outfile.write(chunk)
 
-  # delete the old file and replace with the new
-  os.remove(file)
-  os.rename(file + ".tmp", file)
+    # delete the old file and replace with the new
+    os.remove(file)
+    os.rename(file + ".tmp", file)
 
 
 def log(level, text):
   datetime = datetime_string()
   log_entry = "{0} [{1:8} /{2:>4}kB] {3}".format(datetime, level, round(gc.mem_free() / 1024), text)
   print(log_entry)
-  with open(log_file, "a") as logfile:
-    logfile.write(log_entry + '\n')
+  with lock:
+    with open(log_file, "a") as logfile:
+      logfile.write(log_entry + '\n')
 
   if _log_truncate_at and file_size(log_file) > _log_truncate_at:
     truncate(log_file, _log_truncate_to)

@@ -3,6 +3,7 @@ import uasyncio
 import queue
 from state import State
 import variables
+import ntptime
 from phew.logging import info, error
 
 wifi_statuses = {-3: 'Incorrect password', -2: 'No matching SSID found', -1: 'Connection failed',
@@ -71,7 +72,9 @@ async def connect(ssid, password, hostname):
         error(f'WiFi error: {status_text}. Retrying...')
     else:
         status = wlan.ifconfig()
-        info(f'Connected to WiFi; IP: {status[0]}')
+        info(f'Connected to WiFi; IP: {status[0]}, hostname: {network.hostname()}')
+        ntptime.timeout = 5
+        ntptime.settime()
 
     return wlan
 

@@ -3,15 +3,19 @@ from phew import server
 from phew.template import render_template
 from state import State
 from settings import Settings
+from phew.logging import log_file
+from lock import lock
+import gc
 
 TEMPLATE_PATH = 'templates'
 
 index_template_path = f'{TEMPLATE_PATH}/index.html'
 
+
 @server.route('/', methods=['GET'])
 async def __get(request):
     settings = await State.get_settings()
-    return render_template(index_template_path, settings=settings), 200
+    return render_template(index_template_path, settings=settings, errors=[], success=''), 200
 
 
 @server.route('/', methods=['POST'])
@@ -19,10 +23,15 @@ async def __post(request):
     settings, errors = __parse_and_validate_settings(request.form)
     if len(errors) > 0:
         settings = await State.get_settings()
-        return render_template(index_template_path, settings=settings, errors=errors), 422
+        return render_template(index_template_path, settings=settings, errors=errors, success=''), 422
     await State.state_q.put((State.set_settings, settings))
     success = 'Settings saved successfully'
     return render_template(index_template_path, settings=settings, errors=errors, success=success), 200
+
+
+@server.route('/logs', methods=['GET'])
+async def __get(request):
+    return render_template(log_file), 200
 
 
 @server.catchall()
@@ -36,27 +45,27 @@ def __parse_and_validate_settings(form):
 
     def is_valid_minute(minute):
         return is_int(minute) and int(minute) in range(60)
-    
+
     def is_int(s):
         try:
             int(s)
         except ValueError:
             return False
         return True
-    
+
     def is_float(s):
         try:
             float(s)
         except ValueError:
             return False
         return True
-    
+
     def is_valid_brightness(brightness):
         return is_int(brightness) and int(brightness) in range(11)
-    
+
     def is_valid_temperature(temperature):
         return is_float(temperature)
-    
+
     def is_valid_temperature_range(min_temp, max_temp):
         if not is_valid_temperature(min_temp) or not is_valid_temperature(max_temp):
             return False
@@ -101,6 +110,12 @@ def __parse_and_validate_settings(form):
         "rotated": rotated.lower() == "true"
     }
     return Settings(settingsDict), errors
+
+
+def __get_logs():
+    with lock:
+        with open(log_file, 'r') as file:
+            yield from file
 
 
 def run():
