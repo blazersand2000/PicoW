@@ -34,7 +34,6 @@ class TempPublisher:
                 self.__publish(current_temperature)
             except Exception as ex:
                 error(f'Temperature publish failed. Exception: {str(ex)}')
-                pass
             else:
                 info(f'Temperature publish successful. Temperature value: {current_temperature}')
                 self._last_publish_time = current_time
