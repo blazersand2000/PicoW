@@ -66,7 +66,7 @@ class Output:
         if not self._is_temp_within_range and my_time.localtime()[5] % 2 == 0:
             led.set_rgb(255, 0, 0)
         elif not self._current_state.connected if self._current_state is not None else True:
-            led.set_rgb(255, 255, 0)
+            led.set_rgb(255, 100, 0)
         else:
             led.set_rgb(0, 0, 0)
 

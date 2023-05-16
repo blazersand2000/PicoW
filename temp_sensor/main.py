@@ -14,7 +14,7 @@ from wifi import wifi_loop
 import web_server
 
 async def main():
-    #set_log_levels()
+    set_log_levels()
 
     uasyncio.create_task(State.state_loop())
 

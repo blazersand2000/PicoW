@@ -18,11 +18,11 @@ class TempPublisher:
             is_wifi_connected = (await State.get_wifi_status())[0]
 
             if self.__publish_is_due(current_time):
-                self.__try_publish(current_time, current_temperature, is_wifi_connected)
+                await self.__try_publish(current_time, current_temperature, is_wifi_connected)
 
             await uasyncio.sleep(1)
 
-    def __try_publish(self, current_time, current_temperature, is_wifi_connected):
+    async def __try_publish(self, current_time, current_temperature, is_wifi_connected):
         if current_temperature is None:
             warn('Skipping temperature publish because of missing temperature')
         elif self._interval is None:
@@ -31,7 +31,7 @@ class TempPublisher:
             warn('Skipping temperature publish because WiFi is not connected')
         else:
             try:
-                self.__publish(current_temperature)
+                await self.__publish(current_temperature)
             except Exception as ex:
                 error(f'Temperature publish failed. Exception: {str(ex)}')
             else:
@@ -56,6 +56,8 @@ class TempPublisher:
         info(f'Next temperature publish time: {self._next_publish_time}')
 
     def __publish(self, current_temperature):
-        url = variables.url(current_temperature)
+        settings = await State.get_settings()
+        name = settings.hostname
+        url = variables.url(name, current_temperature)
         r = urequests.get(url)
         r.close()
